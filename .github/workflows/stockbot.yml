@@ -1,12 +1,17 @@
 name: iPhone stock bot
 
 # El bot corre en modo continuo (igual que en la Mac: cada ~2 min, comandos de
-# Telegram y cacería agresiva). Cada ejecución dura ~5 h 30 min; el cron deja
-# siempre una ejecución en cola que toma el relevo en cuanto termina la actual.
+# Telegram y cacería agresiva). Cada ejecución dura ~5 h 30 min y, al terminar,
+# lanza ella misma la siguiente. El cron queda solo como respaldo, porque GitHub
+# lo retrasa o se lo salta.
 on:
   schedule:
     - cron: "7,27,47 * * * *"
   workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Minutos que corre el bot antes del relevo"
+        default: "330"
 
 concurrency:
   group: stockbot
@@ -16,6 +21,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    permissions:
+      contents: read
+      actions: write   # para lanzar el relevo
     env:
       TZ: America/New_York
     steps:
@@ -42,16 +50,20 @@ jobs:
         run: printf '%s\n' "$CONFIG_YAML" > config.yaml
 
       - name: Revisar stock (modo continuo)
+        id: bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           PROXIES: ${{ secrets.PROXIES }}
+          DURATION: ${{ inputs.minutes || '330' }}
         run: |
+          case "$DURATION" in ''|*[!0-9]*) DURATION=330 ;; esac
           code=0
-          timeout 330m python -u bot.py || code=$?
+          timeout "${DURATION}m" python -u bot.py || code=$?
           # 124 = se cumplió el tiempo previsto; la siguiente ejecución toma el relevo
           if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then exit "$code"; fi
+          echo "relay=true" >> "$GITHUB_OUTPUT"
 
       - name: Guardar estado
         if: always()
@@ -59,3 +71,10 @@ jobs:
         with:
           path: state.json
           key: stockbot-state-${{ github.run_id }}
+
+      # Solo si el bot terminó bien: si falló o se canceló a mano, no se relanza.
+      - name: Relevo (lanza la siguiente ejecución)
+        if: steps.bot.outputs.relay == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run stockbot.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"
