@@ -1,0 +1,43 @@
+name: Prueba de alerta
+
+# Se lanza a mano: espera, hace una ronda real y manda al chat privado una
+# alerta de ejemplo marcada como prueba. No interfiere con el bot continuo.
+on:
+  workflow_dispatch:
+    inputs:
+      delay_seconds:
+        description: "Segundos de espera antes de la prueba"
+        default: "150"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TZ: America/New_York
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Crear config desde secretos
+        env:
+          CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
+        run: printf '%s\n' "$CONFIG_YAML" > config.yaml
+
+      - name: Esperar
+        env:
+          DELAY: ${{ inputs.delay_seconds }}
+        run: sleep "$DELAY"
+
+      - name: Ronda real y alerta de prueba
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PROXIES: ${{ secrets.PROXIES }}
+        run: python -u prueba_alerta.py
