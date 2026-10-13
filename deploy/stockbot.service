@@ -1,0 +1,15 @@
+[Unit]
+Description=Bot de stock de iPhones
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=stockbot
+WorkingDirectory=/opt/iphone-stock-bot
+ExecStart=/opt/iphone-stock-bot/.venv/bin/python -u bot.py
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

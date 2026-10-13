@@ -1,0 +1,38 @@
+# Configuración del bot de stock — iPhone 18 Pro Max 512 GB, tiendas de New Hampshire
+
+country_path: ""          # "" = Apple Store EE.UU.
+
+# Tiendas a revisar (una consulta por tienda, ~9 KB cada una).
+stores:
+  - R631   # The Mall of New Hampshire — Manchester, NH
+  - R027   # Rockingham Park — Salem, NH
+  - R354   # Pheasant Lane — Nashua, NH
+
+# Alternativa: buscar por código postal (trae ~12 tiendas, pero ~100 KB por consulta).
+locations: []
+
+# Solo mostrar tiendas de estos estados (vacío = todas).
+states: [NH]
+
+# Part numbers (verificados en apple.com el 13-oct-2026)
+parts:
+  MJW84LL/A: "iPhone 18 Pro Max 512GB Black"
+  MJW94LL/A: "iPhone 18 Pro Max 512GB Silver"
+  MJWA4LL/A: "iPhone 18 Pro Max 512GB Burgundy"
+  MJWC4LL/A: "iPhone 18 Pro Max 512GB Glacier"
+
+interval_seconds: 120     # modo normal: cada ~2 min (+ jitter)
+jitter_seconds: 30
+
+aggressive:               # cuando aparece stock
+  window_minutes: 10
+  interval_seconds: 20
+
+# Freno de seguridad para el plan de 1 GB/mes (~33 MB/día).
+max_mb_per_day: 30
+
+notify_on_unavailable: false
+timeout_seconds: 20
+proxies_file: proxies.txt
+proxy_cooldown_seconds: 300
+state_file: state.json

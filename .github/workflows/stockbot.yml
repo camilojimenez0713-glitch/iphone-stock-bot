@@ -1,0 +1,61 @@
+name: iPhone stock bot
+
+# El bot corre en modo continuo (igual que en la Mac: cada ~2 min, comandos de
+# Telegram y cacería agresiva). Cada ejecución dura ~5 h 30 min; el cron deja
+# siempre una ejecución en cola que toma el relevo en cuanto termina la actual.
+on:
+  schedule:
+    - cron: "7,27,47 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: stockbot
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      TZ: America/New_York
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # El estado se guarda entre ejecuciones para no repetir alertas.
+      - name: Restaurar estado
+        uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: stockbot-state-${{ github.run_id }}
+          restore-keys: stockbot-state-
+
+      - name: Crear config desde secretos
+        env:
+          CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
+        run: printf '%s\n' "$CONFIG_YAML" > config.yaml
+
+      - name: Revisar stock (modo continuo)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          PROXIES: ${{ secrets.PROXIES }}
+        run: |
+          code=0
+          timeout 330m python -u bot.py || code=$?
+          # 124 = se cumplió el tiempo previsto; la siguiente ejecución toma el relevo
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then exit "$code"; fi
+
+      - name: Guardar estado
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state.json
+          key: stockbot-state-${{ github.run_id }}

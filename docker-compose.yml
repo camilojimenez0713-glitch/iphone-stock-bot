@@ -1,0 +1,13 @@
+services:
+  stockbot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./proxies.txt:/app/proxies.txt:ro
+      - ./data:/app/data
+    environment:
+      - TZ=America/New_York
+      - STATE_FILE=/app/data/state.json
+    command: ["python", "-u", "bot.py"]

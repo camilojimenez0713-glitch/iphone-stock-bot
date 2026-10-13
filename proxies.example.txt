@@ -1,0 +1,3 @@
+# Un proxy por línea.
+# Webshare Rotating Residential (Endpoint Generator → país United States → pestaña HTTP):
+# http://USUARIO-rotate:CLAVE@p.webshare.io:80

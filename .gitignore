@@ -1,0 +1,16 @@
+.env
+
+proxies.txt
+state.json
+state.tmp
+__pycache__/
+.venv/
+
+# No subir: el bot viejo (config.py tiene el token dentro) ni copias locales.
+# config.yaml llega a GitHub como secreto (CONFIG_YAML).
+config.py
+monitor.py
+bot-nuevo.zip
+requirements.viejo.txt
+config.yaml
+.DS_Store
