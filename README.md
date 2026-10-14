@@ -1,10 +1,7 @@
-# Bot de stock — iPhone 18 Pro Max 512 GB (New Hampshire)
+# Bot de stock — iPhone 18 Pro Max 256/512 GB (Delaware)
 
-Este bot revisa la disponibilidad de **recogida en tienda** del iPhone 18 Pro Max de 512 GB, en los cuatro colores, en las tres Apple Store de New Hampshire y en la de Delaware (estados sin impuesto a las ventas):
+Este bot revisa la disponibilidad de **recogida en tienda** del iPhone 18 Pro Max de 256 GB y de 512 GB, en los cuatro colores, en la Apple Store de Delaware (estado sin impuesto a las ventas):
 
-- **Mall of NH** (R631)
-- **Rockingham Park** (R027)
-- **Pheasant Lane** (R354)
 - **Christiana Mall** (R102) — Newark, DE
 
 Cuando un modelo aparece disponible, avisa por **Telegram**.
@@ -61,8 +58,8 @@ Los comandos solo los acepta desde tu chat privado.
 
 ## 4. Consumo del GB de Webshare
 
-- Cada consulta a una tienda pesa unos **9 KB**.
-- Cada ~2 minutos el bot consulta 4 tiendas, lo que da unos **27 MB al día**, o **~800 MB al mes**.
+- Cada consulta a una tienda pesa unos **14 KB** con los 8 modelos.
+- Cada ~2 minutos el bot consulta 1 tienda, lo que da unos **9 MB al día**, o **~270 MB al mes**.
 - Cuando aparece stock entra en **cacería agresiva**: revisa cada ~20 segundos durante 10 minutos.
 - Si un día pasa de `max_mb_per_day` (30 MB), baja la frecuencia a un tercio hasta el día siguiente y te avisa.
 - Con `/status` ves el consumo, y también en el panel de Webshare.
@@ -86,6 +83,17 @@ Los comandos solo los acepta desde tu chat privado.
    ```
 
 Importante: **no corras el bot en tu Mac y en el VPS al mismo tiempo.** Gastarías el doble de GB y te llegarían alertas duplicadas.
+
+## Dónde corre ahora: GitHub Actions
+
+El bot corre en el repositorio `camilojimenez0713-glitch/iphone-stock-bot` (workflow **iPhone stock bot**). Cada ejecución dura ~5 h 30 min y lanza ella misma la siguiente.
+
+- `config.yaml` no está en el repositorio: vive en el secreto `CONFIG_YAML`. Si lo cambias, actualízalo con
+  `gh secret set CONFIG_YAML --repo camilojimenez0713-glitch/iphone-stock-bot < config.yaml`
+  y relanza el bot.
+- Para relanzarlo: Actions → iPhone stock bot → Run workflow.
+- Para apagarlo: Actions → iPhone stock bot → Disable workflow, y cancela la ejecución en curso.
+- **No lo corras a la vez en la Mac o en un VPS.**
 
 ## Cambiar modelos o tiendas
 
